@@ -7,9 +7,11 @@
 
 import UIKit
 
-private let reuseIdentifier = "Cell"
+private let reuseIdentifier = "categoryCell"
 
 class CategoryCollectionViewController: UICollectionViewController {
+    
+    private let categories = Category.allCases
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -18,7 +20,7 @@ class CategoryCollectionViewController: UICollectionViewController {
         // self.clearsSelectionOnViewWillAppear = false
 
         // Register cell classes
-        self.collectionView!.register(UICollectionViewCell.self, forCellWithReuseIdentifier: reuseIdentifier)
+        //self.collectionView!.register(UICollectionViewCell.self, forCellWithReuseIdentifier: reuseIdentifier)
 
         // Do any additional setup after loading the view.
     }
@@ -37,19 +39,32 @@ class CategoryCollectionViewController: UICollectionViewController {
 
     override func numberOfSections(in collectionView: UICollectionView) -> Int {
         // #warning Incomplete implementation, return the number of sections
-        return 0
+        return 1
     }
 
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of items
-        return 0
+        return categories.count
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath)
     
         // Configure the cell
+
+        let category = Category.allCases[indexPath.item]
+
+        if let imageView = cell.contentView.viewWithTag(1) as? UIImageView {
+            imageView.image = UIImage(named: category.imageName)
+            
+            imageView.layer.cornerRadius = 8
+            imageView.layer.masksToBounds = true
+        }
+
+        if let label = cell.contentView.viewWithTag(2) as? UILabel {
+            label.text = category.title
+        }
     
         return cell
     }

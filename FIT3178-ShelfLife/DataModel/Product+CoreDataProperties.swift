@@ -20,6 +20,36 @@ enum Category: Int32, CaseIterable{
     case eyeliner = 7
     case eyebrow = 8
     case bronzer = 9
+    
+    var title: String {
+        switch self {
+        case .lipProducts: return "Lip Products"
+        case .blush:       return "Blush"
+        case .nailPolish:  return "Nail Polish"
+        case .mascara:     return "Mascara"
+        case .lipLiner:    return "Lip Liner"
+        case .foundation:  return "Foundation"
+        case .eyeshadow:   return "Eyeshadow"
+        case .eyeliner:    return "Eyeliner"
+        case .eyebrow:     return "Eyebrow"
+        case .bronzer:     return "Bronzer"
+        }
+    }
+    
+    var imageName: String {
+        switch self {
+        case .lipProducts: return "lipProducts"
+        case .blush:       return "blush"
+        case .nailPolish:  return "nailPolish"
+        case .mascara:     return "mascara"
+        case .lipLiner:    return "lipLiner"
+        case .foundation:  return "foundation"
+        case .eyeshadow:   return "eyeshadow"
+        case .eyeliner:    return "eyeliner"
+        case .eyebrow:     return "eyebrow"
+        case .bronzer:     return "bronzer"
+        }
+    }
 }
 
 extension Product {
