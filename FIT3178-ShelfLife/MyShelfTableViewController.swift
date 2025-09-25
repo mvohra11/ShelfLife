@@ -79,8 +79,11 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
         }
 
         content.text = title
+        content.textProperties.font = UIFont.systemFont(ofSize: UIFont.labelFontSize, weight: .semibold)
         content.secondaryText = "Restock: \(paoText)"
+        content.secondaryTextProperties.color = .gray
         shelfItemCell.contentConfiguration = content
+        
         return shelfItemCell
     }
 

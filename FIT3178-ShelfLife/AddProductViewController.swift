@@ -14,6 +14,10 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
     @IBOutlet weak var Picker: UIPickerView!
     @IBOutlet weak var paoField: UITextField!
     
+    var initialName: String?
+    var initialBrand: String?
+    var initialCategory: Category?
+    
     weak var coreDatabaseController: DatabaseProtocol?
 
     override func viewDidLoad() {
@@ -22,6 +26,19 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
         coreDatabaseController = appDelegate?.coreDatabaseController
         Picker.delegate = self
         Picker.dataSource = self
+        
+        if let name = initialName {
+            nameField.text = name
+        }
+
+        if let brand = initialBrand {
+            brandField.text = brand
+        }
+
+        if let cat = initialCategory,
+           let row = Category.allCases.firstIndex(of: cat) {
+            Picker.selectRow(row, inComponent: 0, animated: false)
+        }
     }
     
     func numberOfComponents(in pickerView: UIPickerView) -> Int {

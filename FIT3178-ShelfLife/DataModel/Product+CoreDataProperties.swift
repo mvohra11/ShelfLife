@@ -50,6 +50,21 @@ enum Category: Int32, CaseIterable{
         case .bronzer:     return "bronzer"
         }
     }
+
+    var apiProductType: String {
+        switch self {
+        case .lipProducts: return "lipstick"
+        case .blush:       return "blush"
+        case .nailPolish:  return "nail_polish"
+        case .mascara:     return "mascara"
+        case .lipLiner:    return "lip_liner"
+        case .foundation:  return "foundation"
+        case .eyeshadow:   return "eyeshadow"
+        case .eyeliner:    return "eyeliner"
+        case .eyebrow:     return "eyebrow"
+        case .bronzer:     return "bronzer"
+        }
+    }
 }
 
 extension Product {
