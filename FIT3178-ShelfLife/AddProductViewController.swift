@@ -7,8 +7,9 @@
 
 import UIKit
 
-class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource {
+class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
+    @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var nameField: UITextField!
     @IBOutlet weak var brandField: UITextField!
     @IBOutlet weak var Picker: UIPickerView!
@@ -17,6 +18,7 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
     var initialName: String?
     var initialBrand: String?
     var initialCategory: Category?
+    var selectedImageFilename: String?
     
     weak var coreDatabaseController: DatabaseProtocol?
 
@@ -104,6 +106,7 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
                 errorMsg += "- Must provide a PAO\n"
             }
             displayMessage(title: "Not all fields filled", message: errorMsg)
+            return
         }
         
         guard let months = Int(pao), months >= 0 else {
@@ -116,8 +119,71 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
                 return
             }
         
-        let _ = coreDatabaseController?.addProduct(name: name, brand: brand, category: category, pao: paoDate, imageFile: nil)
+        var filename: String? = nil
+        
+        if let image = imageView.image,
+           image != UIImage(systemName: "camera.fill") {
+            
+            let timestamp = UInt(Date().timeIntervalSince1970)
+            filename = "\(timestamp).jpg"
+            
+            guard let data = image.jpegData(compressionQuality: 0.8) else {
+                displayMessage(title: "Compression Error", message: "Image data could not be compressed")
+                return
+            }
+            
+            let pathsList = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+            let documentDirectory = pathsList[0]
+            let imageFile = documentDirectory.appendingPathComponent(filename!)
+            
+            do {
+                try data.write(to: imageFile)
+            } catch {
+                displayMessage(title: "Save Error", message: "Failed to save image: \(error.localizedDescription)")
+                return
+            }
+        }
+        
+        let _ = coreDatabaseController?.addProduct(name: name, brand: brand, category: category, pao: paoDate, imageFile: filename)
         navigationController?.popViewController(animated: true)
+    }
+    @IBAction func takePhoto(_ sender: Any) {
+        let actionSheet = UIAlertController(title: "Choose Photo Source", message: nil, preferredStyle: .actionSheet)
+        
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            actionSheet.addAction(UIAlertAction(title: "Take Photo", style: .default) { _ in
+                let picker = UIImagePickerController()
+                picker.sourceType = .camera
+                picker.allowsEditing = false
+                picker.delegate = self
+                self.present(picker, animated: true)
+            })
+        }
+        
+        actionSheet.addAction(UIAlertAction(title: "Choose from Library", style: .default) { _ in
+            let picker = UIImagePickerController()
+            picker.sourceType = .photoLibrary
+            picker.allowsEditing = false
+            picker.delegate = self
+            self.present(picker, animated: true)
+        })
+        
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        
+        present(actionSheet, animated: true)
+    }
+    
+    // MARK: - Image Delegate
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        if let pickedImage = info[.originalImage] as? UIImage {
+            imageView.image = pickedImage
+            imageView.contentMode = .scaleAspectFill
+        }
+        dismiss(animated: true,completion: nil)
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        dismiss(animated: true, completion: nil)
     }
     
 }
