@@ -9,14 +9,18 @@ import UIKit
 
 class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
+    @IBOutlet weak var saveButton: UIButton!
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var nameField: UITextField!
     @IBOutlet weak var brandField: UITextField!
     @IBOutlet weak var Picker: UIPickerView!
-    @IBOutlet weak var paoField: UITextField!
+    @IBOutlet weak var datePicker: UIDatePicker!
+    
+    var edittingProduct: Product?
     
     var initialName: String?
     var initialBrand: String?
+    var initialPao: Date?
     var initialCategory: Category?
     var selectedImageFilename: String?
     
@@ -28,6 +32,7 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
         coreDatabaseController = appDelegate?.coreDatabaseController
         Picker.delegate = self
         Picker.dataSource = self
+        datePicker.minimumDate = Date()
         
         if let name = initialName {
             nameField.text = name
@@ -36,10 +41,27 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
         if let brand = initialBrand {
             brandField.text = brand
         }
+        
+        if let restock = initialPao {
+            datePicker.date = restock
+        }
 
         if let cat = initialCategory,
            let row = Category.allCases.firstIndex(of: cat) {
             Picker.selectRow(row, inComponent: 0, animated: false)
+        }
+        
+        if let productImage = selectedImageFilename {
+            let paths = FileManager.default.urls(for: .documentDirectory,
+            in: .userDomainMask)
+            let documentsDirectory = paths[0]
+            let imageURL = documentsDirectory.appendingPathComponent(productImage)
+            let image = UIImage(contentsOfFile: imageURL.path)
+            imageView.image = image
+        }
+        
+        if edittingProduct != nil {
+            saveButton.setTitle("Update Product", for: .normal)
         }
     }
     
@@ -90,11 +112,13 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
     }
     
     @IBAction func createProduct(_ sender: Any) {
-        guard let name = nameField.text, let brand = brandField.text, let pao = paoField.text, let category = Category(rawValue: Int32(Picker.selectedRow(inComponent: 0))) else {
+        guard let name = nameField.text, let brand = brandField.text, let category = Category(rawValue: Int32(Picker.selectedRow(inComponent: 0))) else {
             return
         }
         
-        if name.isEmpty || brand.isEmpty || pao.isEmpty {
+        let restockDate = datePicker.date
+        
+        if name.isEmpty || brand.isEmpty{
             var errorMsg = "Please ensure all fields are filled: \n"
             if name.isEmpty{
                 errorMsg += "- Must provide a name\n"
@@ -102,23 +126,10 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
             if brand.isEmpty{
                 errorMsg += "- Must provide a brand\n"
             }
-            if pao.isEmpty{
-                errorMsg += "- Must provide a PAO\n"
-            }
             displayMessage(title: "Not all fields filled", message: errorMsg)
             return
         }
-        
-        guard let months = Int(pao), months >= 0 else {
-                displayMessage(title: "Invalid PAO", message: "PAO must be a whole number of months (e.g., 6).")
-                return
-            }
-        
-        guard let paoDate = Calendar.current.date(byAdding: .month, value: months, to: Date()) else {
-                displayMessage(title: "Date Error", message: "Could not compute the PAO date.")
-                return
-            }
-        
+                
         var filename: String? = nil
         
         if let image = imageView.image,
@@ -144,7 +155,12 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
             }
         }
         
-        let _ = coreDatabaseController?.addProduct(name: name, brand: brand, category: category, pao: paoDate, imageFile: filename)
+        if let product = edittingProduct {
+            let _ = coreDatabaseController?.updateProduct(product: product, name: name, brand: brand, category: category, restockDate: restockDate, imageFile: filename)
+        } else {
+            let _ = coreDatabaseController?.addProduct(name: name, brand: brand, category: category, restockDate: restockDate, imageFile: filename)
+        }
+        
         navigationController?.popViewController(animated: true)
     }
     @IBAction func takePhoto(_ sender: Any) {
@@ -177,7 +193,6 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let pickedImage = info[.originalImage] as? UIImage {
             imageView.image = pickedImage
-            imageView.contentMode = .scaleAspectFill
         }
         dismiss(animated: true,completion: nil)
     }

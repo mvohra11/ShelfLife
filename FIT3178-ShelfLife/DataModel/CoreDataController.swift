@@ -47,12 +47,22 @@ class CoreDataController: NSObject, DatabaseProtocol, NSFetchedResultsController
         listeners.removeDelegate(listener)
         }
         
-    func addProduct(name: String, brand: String, category: Category, pao: Date, imageFile: String?) -> Product {
+    func addProduct(name: String, brand: String, category: Category, restockDate: Date, imageFile: String?) -> Product {
         let product = Product(context: persistentContainer.viewContext)
         product.name = name
         product.brand = brand
         product.productCategory = category
-        product.pao = pao
+        product.restockDate = restockDate
+        product.imageFile = imageFile
+        cleanup()
+        return product
+    }
+    
+    func updateProduct(product: Product, name: String, brand: String, category: Category, restockDate: Date, imageFile: String?) -> Product {
+        product.name = name
+        product.brand = brand
+        product.productCategory = category
+        product.restockDate = restockDate
         product.imageFile = imageFile
         cleanup()
         return product

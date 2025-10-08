@@ -76,7 +76,7 @@ extension Product {
     @NSManaged public var name: String?
     @NSManaged public var brand: String?
     @NSManaged public var category: Int32
-    @NSManaged public var pao: Date?
+    @NSManaged public var restockDate: Date?
     @NSManaged public var imageFile: String?
 
 }

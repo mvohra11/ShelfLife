@@ -70,7 +70,7 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
         }
                 
         let paoText: String
-        if let paoDate = product.pao {
+        if let paoDate = product.restockDate {
             let formatter = DateFormatter()
             formatter.dateFormat = "dd/MM/yyyy"
             paoText = formatter.string(from: paoDate)
@@ -82,6 +82,24 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
         content.textProperties.font = UIFont.systemFont(ofSize: UIFont.labelFontSize, weight: .semibold)
         content.secondaryText = "Restock: \(paoText)"
         content.secondaryTextProperties.color = .gray
+        
+        if let imageFilename = product.imageFile {
+            let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+            let documentsDirectory = paths[0]
+            let imageURL = documentsDirectory.appendingPathComponent(imageFilename)
+            
+            if let image = UIImage(contentsOfFile: imageURL.path) {
+                content.image = image
+            } else {
+                content.image = UIImage(named: "defaultProduct")
+            }
+        } else {
+            content.image = UIImage(named: "defaultProduct")
+        }
+
+        content.imageProperties.maximumSize = CGSize(width: 60, height: 60)
+        content.imageProperties.reservedLayoutSize = CGSize(width: 60, height: 60)
+        content.imageProperties.cornerRadius = 8        
         shelfItemCell.contentConfiguration = content
         
         return shelfItemCell
@@ -113,5 +131,26 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
             }
         }
         tableView.reloadData()
+    }
+    
+    // MARK: - Navigation
+
+    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Get the new view controller using segue.destination.
+        // Pass the selected object to the new view controller.
+        if segue.identifier=="editProductSegue"{
+            if let destination = segue.destination as? AddProductViewController,
+               let cell = sender as? UITableViewCell,
+               let indexPath = tableView.indexPath(for: cell) {
+                let selectedProduct = filteredProducts[indexPath.row]
+                destination.edittingProduct = selectedProduct
+                destination.initialName = selectedProduct.name
+                destination.initialBrand = selectedProduct.brand?.uppercased()
+                destination.initialCategory = Category(rawValue: selectedProduct.category)
+                destination.initialPao = selectedProduct.restockDate
+                destination.selectedImageFilename = selectedProduct.imageFile
+            }
+        }
     }
 }

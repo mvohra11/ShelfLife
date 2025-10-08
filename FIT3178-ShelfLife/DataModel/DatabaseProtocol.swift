@@ -29,7 +29,8 @@ protocol DatabaseProtocol: AnyObject{
     func addListener(listener: DatabaseListener)
     func removeListener(listener: DatabaseListener)
     
-    func addProduct(name:String, brand:String, category: Category, pao: Date, imageFile: String?) -> Product
+    func addProduct(name:String, brand:String, category: Category, restockDate: Date, imageFile: String?) -> Product
+    func updateProduct(product: Product, name: String, brand: String, category: Category, restockDate: Date, imageFile: String?) -> Product
     func deleteProduct(product:Product)
     
 }
