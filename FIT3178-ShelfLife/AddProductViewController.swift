@@ -33,6 +33,7 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
         Picker.delegate = self
         Picker.dataSource = self
         datePicker.minimumDate = Date()
+        imageView.layer.cornerRadius = 10
         
         if let name = initialName {
             nameField.text = name
