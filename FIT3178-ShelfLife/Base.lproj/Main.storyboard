@@ -246,6 +246,9 @@
                                                 <rect key="frame" x="118" y="401.33333333333331" width="49.666666666666629" height="34.333333333333314"/>
                                                 <color key="tintColor" name="customBlack"/>
                                                 <buttonConfiguration key="configuration" style="plain"/>
+                                                <connections>
+                                                    <action selector="showDateInfo:" destination="11x-4C-C7R" eventType="touchUpInside" id="LEZ-Bs-Z5A"/>
+                                                </connections>
                                             </button>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Category:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PXx-dd-FMN">
                                                 <rect key="frame" x="24" y="461" width="74" height="21"/>

@@ -80,6 +80,7 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
 
         content.text = title
         content.textProperties.font = UIFont.systemFont(ofSize: UIFont.labelFontSize, weight: .semibold)
+        content.textProperties.numberOfLines = 2
         content.secondaryText = "Restock: \(paoText)"
         content.secondaryTextProperties.color = .gray
         
@@ -99,7 +100,7 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
 
         content.imageProperties.maximumSize = CGSize(width: 60, height: 60)
         content.imageProperties.reservedLayoutSize = CGSize(width: 60, height: 60)
-        content.imageProperties.cornerRadius = 8        
+        content.imageProperties.cornerRadius = 8
         shelfItemCell.contentConfiguration = content
         
         return shelfItemCell

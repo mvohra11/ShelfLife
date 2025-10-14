@@ -107,7 +107,7 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
     func displayMessage(title: String, message: String){
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
-        alertController.addAction(UIAlertAction(title: "Dismiss", style: .default,handler: nil))
+        alertController.addAction(UIAlertAction(title: "OK", style: .default,handler: nil))
         
         self.present(alertController,animated: true,completion: nil)
     }
@@ -202,4 +202,7 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
         dismiss(animated: true, completion: nil)
     }
     
+    @IBAction func showDateInfo(_ sender: Any) {
+        displayMessage(title: "Picking the right date", message: "You can pick a Restock date based on either the expiry of the product, or the PAO (period after opening). Which can be found as a number shown on a container somewhere on the product. This is the number of months your product is good for after being opened.")
+    }
 }
