@@ -9,11 +9,16 @@ import UIKit
 
 class MyShelfTableViewController: UITableViewController, DatabaseListener, UISearchResultsUpdating {
 
+    @IBOutlet weak var segmentedControl: UISegmentedControl!
     let SECTION_PRODUCT = 0
     let CELL_PRODUCT = "shelfItemCell"
 
     var allShelfProducts: [Product] = []
     var filteredProducts: [Product] = []
+    var currentProducts: [Product] = []
+    var expiredProducts: [Product] = []
+    
+    var displayedProducts: [Product] = []
 
     var listenerType = ListenerType.products
     weak var coreDatabaseController: DatabaseProtocol?
@@ -45,7 +50,7 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
-        case SECTION_PRODUCT: return filteredProducts.count
+        case SECTION_PRODUCT: return displayedProducts.count
         default: return 0
         }
     }
@@ -54,7 +59,7 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
         let shelfItemCell = tableView.dequeueReusableCell(withIdentifier: CELL_PRODUCT, for: indexPath)
 
         var content = shelfItemCell.defaultContentConfiguration()
-        let product = filteredProducts[indexPath.row]
+        let product = displayedProducts[indexPath.row]
         
         let brand = product.brand ?? ""
         let name = product.name ?? ""
@@ -92,6 +97,13 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
         content.secondaryText = "Restock: \(paoText)"
         content.secondaryTextProperties.color = .gray
         
+        if segmentedControl.selectedSegmentIndex == 1 {
+            content.secondaryTextProperties.color = .systemRed
+            content.secondaryText = "Expired: \(paoText)"
+        } else {
+            content.secondaryTextProperties.color = .gray
+        }
+        
         if let imageFilename = product.imageFile {
             let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
             let documentsDirectory = paths[0]
@@ -128,7 +140,7 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
 
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            let product = filteredProducts[indexPath.row]
+            let product = displayedProducts[indexPath.row]
             coreDatabaseController?.deleteProduct(product: product)
         }
     }
@@ -149,7 +161,7 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
                 return nameMatch || brandMatch
             }
         }
-        tableView.reloadData()
+        segmentChanged(segmentedControl)
     }
     
     // MARK: - Navigation
@@ -162,7 +174,7 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
             if let destination = segue.destination as? AddProductViewController,
                let cell = sender as? UITableViewCell,
                let indexPath = tableView.indexPath(for: cell) {
-                let selectedProduct = filteredProducts[indexPath.row]
+                let selectedProduct = displayedProducts[indexPath.row]
                 destination.edittingProduct = selectedProduct
                 destination.initialName = selectedProduct.name
                 destination.initialBrand = selectedProduct.brand?.uppercased()
@@ -171,5 +183,31 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
                 destination.selectedImageFilename = selectedProduct.imageFile
             }
         }
+    }
+    @IBAction func segmentChanged(_ sender: UISegmentedControl) {
+        let today = Calendar.current.startOfDay(for: Date())
+        
+        currentProducts = filteredProducts.filter { product in
+            guard let restockDate = product.restockDate else { return false }
+            let productDay = Calendar.current.startOfDay(for: restockDate)
+            return productDay > today
+        }
+        
+        expiredProducts = filteredProducts.filter { product in
+            guard let restockDate = product.restockDate else { return true }
+            let productDay = Calendar.current.startOfDay(for: restockDate)
+            return productDay <= today
+        }
+        
+        switch sender.selectedSegmentIndex {
+        case 0:
+            displayedProducts = currentProducts
+        case 1:
+            displayedProducts = expiredProducts
+        default:
+            displayedProducts = []
+        }
+        
+        tableView.reloadData()
     }
 }

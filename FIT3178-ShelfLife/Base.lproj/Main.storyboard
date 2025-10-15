@@ -146,9 +146,32 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="DR4-5M-czp">
+                            <rect key="frame" x="0.0" y="0.0" width="393" height="44"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <subviews>
+                                <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="Mnb-fY-vgR">
+                                    <rect key="frame" x="16" y="8" width="361" height="29"/>
+                                    <segments>
+                                        <segment title="Current"/>
+                                        <segment title="Expired"/>
+                                    </segments>
+                                    <connections>
+                                        <action selector="segmentChanged:" destination="5fq-aq-n7C" eventType="valueChanged" id="6Lg-vz-Ey3"/>
+                                    </connections>
+                                </segmentedControl>
+                            </subviews>
+                            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            <constraints>
+                                <constraint firstAttribute="trailing" secondItem="Mnb-fY-vgR" secondAttribute="trailing" constant="16" id="El7-wB-Vzd"/>
+                                <constraint firstAttribute="bottom" secondItem="Mnb-fY-vgR" secondAttribute="bottom" constant="8" id="cpB-hW-Gaw"/>
+                                <constraint firstItem="Mnb-fY-vgR" firstAttribute="top" secondItem="DR4-5M-czp" secondAttribute="top" constant="8" id="dA2-L9-uiK"/>
+                                <constraint firstItem="Mnb-fY-vgR" firstAttribute="leading" secondItem="DR4-5M-czp" secondAttribute="leading" constant="16" id="m0F-nu-A5s"/>
+                            </constraints>
+                        </view>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="shelfItemCell" textLabel="oUD-50-ccJ" detailTextLabel="Wv0-BM-jIX" imageView="DaO-S8-whj" rowHeight="80" style="IBUITableViewCellStyleSubtitle" id="Oqw-90-F1G">
-                                <rect key="frame" x="0.0" y="55.333332061767578" width="393" height="80"/>
+                                <rect key="frame" x="0.0" y="99.333332061767578" width="393" height="80"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Oqw-90-F1G" id="oaH-fO-51l">
                                     <rect key="frame" x="0.0" y="0.0" width="362.66666666666669" height="80"/>
@@ -192,6 +215,9 @@
                             </connections>
                         </barButtonItem>
                     </navigationItem>
+                    <connections>
+                        <outlet property="segmentedControl" destination="Mnb-fY-vgR" id="fyg-6W-zvS"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="bKB-Bn-hbH" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
