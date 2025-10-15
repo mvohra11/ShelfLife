@@ -25,10 +25,11 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
     var selectedImageFilename: String?
     
     weak var coreDatabaseController: DatabaseProtocol?
+    weak var appDelegate: AppDelegate?
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        let appDelegate = UIApplication.shared.delegate as? AppDelegate
+        appDelegate = UIApplication.shared.delegate as? AppDelegate
         coreDatabaseController = appDelegate?.coreDatabaseController
         Picker.delegate = self
         Picker.dataSource = self
@@ -158,8 +159,23 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
         
         if let product = edittingProduct {
             let _ = coreDatabaseController?.updateProduct(product: product, name: name, brand: brand, category: category, restockDate: restockDate, imageFile: filename)
+            let notifID = product.objectID.uriRepresentation().absoluteString
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notifID])
+            createNotification(
+                title: "Time to Restock!",
+                body: "Your \(name) from \(brand) needs to be restocked",
+                id: notifID,
+                date: restockDate
+            )
         } else {
-            let _ = coreDatabaseController?.addProduct(name: name, brand: brand, category: category, restockDate: restockDate, imageFile: filename)
+            if let newProduct = coreDatabaseController?.addProduct(name: name, brand: brand, category: category, restockDate: restockDate, imageFile: filename){
+                createNotification(
+                    title: "Time to Restock!",
+                    body: "Your \(name) from \(brand) needs to be restocked",
+                    id: newProduct.objectID.uriRepresentation().absoluteString,
+                    date: restockDate
+                )
+            }
         }
         
         navigationController?.popViewController(animated: true)
@@ -204,5 +220,27 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
     
     @IBAction func showDateInfo(_ sender: Any) {
         displayMessage(title: "Picking the right date", message: "You can pick a Restock date based on either the expiry of the product, or the PAO (period after opening). Which can be found as a number shown on a container somewhere on the product. This is the number of months your product is good for after being opened.")
+    }
+    
+    func createNotification(title: String, body: String, id: String, date:Date) {
+        guard appDelegate?.notificationsEnabled == true else {
+            print("Notifications are disabled")
+            return
+        }
+        
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        
+        //let debugDate = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
+        
+        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+        
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+                
+        let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
+        
+        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+        print("Notification added for \(components)")
     }
 }

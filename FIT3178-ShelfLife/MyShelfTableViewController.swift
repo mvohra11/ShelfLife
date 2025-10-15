@@ -70,10 +70,18 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
         }
                 
         let paoText: String
+        var isExpiringSoon = false
+        
         if let paoDate = product.restockDate {
             let formatter = DateFormatter()
             formatter.dateFormat = "dd/MM/yyyy"
             paoText = formatter.string(from: paoDate)
+            
+            let calendar = Calendar.current
+            let today = calendar.startOfDay(for: Date())
+            let expiryDay = calendar.startOfDay(for: paoDate)
+            let daysUntilExpiry = calendar.dateComponents([.day], from: today, to: expiryDay).day ?? 0
+            isExpiringSoon = daysUntilExpiry <= 2 && daysUntilExpiry >= 0
         } else {
             paoText = "N/A"
         }
@@ -102,6 +110,16 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
         content.imageProperties.reservedLayoutSize = CGSize(width: 60, height: 60)
         content.imageProperties.cornerRadius = 8
         shelfItemCell.contentConfiguration = content
+        
+        if isExpiringSoon {
+            let config = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular)
+            let warningImage = UIImage(systemName: "exclamationmark.circle.fill", withConfiguration: config)
+            let imageView = UIImageView(image: warningImage)
+            imageView.tintColor = .systemRed
+            shelfItemCell.accessoryView = imageView
+        } else {
+            shelfItemCell.accessoryView = nil
+        }
         
         return shelfItemCell
     }

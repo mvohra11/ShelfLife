@@ -6,16 +6,29 @@
 //
 
 import UIKit
+import UserNotifications
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var coreDatabaseController: DatabaseProtocol?
-
+    var notificationsEnabled = false
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
         coreDatabaseController = CoreDataController()
+        Task{
+            let notificationCenter = UNUserNotificationCenter.current()
+            let notificationSettings = await notificationCenter.notificationSettings()
+            if notificationSettings.authorizationStatus == .notDetermined{
+                let granted = try await notificationCenter.requestAuthorization(options: [.alert])
+                self.notificationsEnabled = granted
+            }
+            else if notificationSettings.authorizationStatus == .authorized{
+                self.notificationsEnabled = true
+            }
+        }
         return true
     }
 
