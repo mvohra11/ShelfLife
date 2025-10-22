@@ -13,16 +13,17 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
     let SECTION_PRODUCT = 0
     let CELL_PRODUCT = "shelfItemCell"
 
-    var allShelfProducts: [Product] = []
-    var filteredProducts: [Product] = []
-    var currentProducts: [Product] = []
-    var expiredProducts: [Product] = []
+    var allShelfProducts: [Product] = []    // All Products
+    var filteredProducts: [Product] = []    // Filtered products according to search
+    var currentProducts: [Product] = []     // Products that have not been expired yet
+    var expiredProducts: [Product] = []     // Products that have expired
     
-    var displayedProducts: [Product] = []
+    var displayedProducts: [Product] = []   // Products that will be displayed according to conditions chosen
 
     var listenerType = ListenerType.products
     weak var coreDatabaseController: DatabaseProtocol?
-
+    
+    /// Function called as soon as view loads, will initiate search bar, app delegate and database controller
     override func viewDidLoad() {
         super.viewDidLoad()
         let appDelegate = UIApplication.shared.delegate as? AppDelegate
@@ -36,18 +37,34 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
         filteredProducts = allShelfProducts
     }
 
+    
+    /// Function will set current view as a database listener
+    /// - Parameter animated: boolean for animation state
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         coreDatabaseController?.addListener(listener: self)
     }
 
+    
+    /// Function will remove current view as a database listener
+    /// - Parameter animated: boolean for animation state
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         coreDatabaseController?.removeListener(listener: self)
     }
 
+    
+    /// Sets number of sections to 1 tableview will only contain same type of product items.
+    /// - Parameter tableView: UITableView
+    /// - Returns: Number of sections as Int
     override func numberOfSections(in tableView: UITableView) -> Int { 1 }
 
+    
+    /// Sets the number of rows in the table to be the number of products displayed.
+    /// - Parameters:
+    ///   - tableView: UITableView
+    ///   - section: Int defining number of sections in the table
+    /// - Returns: Int number of rows in given section
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
         case SECTION_PRODUCT: return displayedProducts.count
@@ -55,12 +72,19 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
         }
     }
 
+    
+    /// Function to configure the content of each row in table.
+    /// - Parameters:
+    ///   - tableView: UITableView
+    ///   - indexPath: IndexPath where row is located
+    /// - Returns: UITableViewCell with title being "brand-name", secondary text being the restock data and image being the set image or default if not set.
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let shelfItemCell = tableView.dequeueReusableCell(withIdentifier: CELL_PRODUCT, for: indexPath)
 
         var content = shelfItemCell.defaultContentConfiguration()
         let product = displayedProducts[indexPath.row]
         
+        // Sets title to be brand - name if both exist, else either one.
         let brand = product.brand ?? ""
         let name = product.name ?? ""
         let title: String
@@ -73,7 +97,8 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
         } else {
             title = "Unknown Product"
         }
-                
+        
+        // Validates and checks expiry using current date
         let paoText: String
         var isExpiringSoon = false
         
@@ -86,17 +111,19 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
             let today = calendar.startOfDay(for: Date())
             let expiryDay = calendar.startOfDay(for: paoDate)
             let daysUntilExpiry = calendar.dateComponents([.day], from: today, to: expiryDay).day ?? 0
-            isExpiringSoon = daysUntilExpiry <= 2 && daysUntilExpiry >= 0
+            isExpiringSoon = daysUntilExpiry <= 2 && daysUntilExpiry >= 0   // Considered to be expiring soon if within 2 days of date.
         } else {
             paoText = "N/A"
         }
-
+        
+        // rest of cell configuration
         content.text = title
         content.textProperties.font = UIFont.systemFont(ofSize: UIFont.labelFontSize, weight: .semibold)
         content.textProperties.numberOfLines = 2
         content.secondaryText = "Restock: \(paoText)"
         content.secondaryTextProperties.color = .gray
         
+        // Expired products have differentiated cells
         if segmentedControl.selectedSegmentIndex == 1 {
             content.secondaryTextProperties.color = .systemRed
             content.secondaryText = "Expired: \(paoText)"
@@ -104,6 +131,7 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
             content.secondaryTextProperties.color = .gray
         }
         
+        // Sets image as the associated product image, else default image.
         if let imageFilename = product.imageFile {
             let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
             let documentsDirectory = paths[0]
@@ -117,12 +145,14 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
         } else {
             content.image = UIImage(named: "defaultProduct")
         }
-
+        
+        // Image Properties
         content.imageProperties.maximumSize = CGSize(width: 60, height: 60)
         content.imageProperties.reservedLayoutSize = CGSize(width: 60, height: 60)
         content.imageProperties.cornerRadius = 8
         shelfItemCell.contentConfiguration = content
         
+        // Warning Exclaimation mark if expiring soon.
         if isExpiringSoon {
             let config = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular)
             let warningImage = UIImage(systemName: "exclamationmark.circle.fill", withConfiguration: config)
@@ -136,6 +166,12 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
         return shelfItemCell
     }
 
+    
+    /// Determines whether a row at the specified index path can be edited.
+    /// - Parameters:
+    ///   - tableView: The table view requesting this information
+    ///   - indexPath: The index path of the row
+    /// - Returns: `true` if the row can be edited, `false` otherwise
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool { true }
 
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
@@ -145,11 +181,19 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
         }
     }
 
+    
+    /// Handles changes to the product database and updates the UI accordingly.
+    /// - Parameters:
+    ///   - change: The type of database change that occurred (insert, update, or delete)
+    ///   - shelfProducts: The updated array of products from the shelf
     func onProductChange(change: DatabaseChange, shelfProducts: [Product]) {
         allShelfProducts = shelfProducts
         updateSearchResults(for: navigationItem.searchController!)
     }
 
+    
+    /// Filters products based on the search text entered by the user.
+    /// - Parameter searchController: The UISearchController containing the search bar and query text
     func updateSearchResults(for searchController: UISearchController) {
         guard let searchText = searchController.searchBar.text?.lowercased() else { return }
         if searchText.isEmpty {
@@ -166,7 +210,17 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
     
     // MARK: - Navigation
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    
+    /// Configures the destination view controller before navigation occurs.
+    ///
+    /// For the "editProductSegue", this method passes the selected product's data
+    /// to the AddProductViewController for editing. Extracts product information
+    /// from the tapped table cell and populates the destination controller's
+    /// initial values.
+    ///
+    /// - Parameters:
+    ///   - segue: The segue object describing the transition
+    ///   - sender: The triggering object, expected to be a UITableViewCell for edit segues
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
@@ -184,6 +238,17 @@ class MyShelfTableViewController: UITableViewController, DatabaseListener, UISea
             }
         }
     }
+    
+    
+    /// Filters and displays products based on the selected segment.
+    /// Separates products into two categories:
+    /// - **Current products**: Restock date is after today (segment 0)
+    /// - **Expired products**: Restock date is today or earlier (segment 1)
+    ///
+    /// Products without a restock date are considered expired.
+    /// Updates the table view to display the selected category.
+    ///
+    /// - Parameter sender: The UISegmentControl with the selected segment index
     @IBAction func segmentChanged(_ sender: UISegmentedControl) {
         let today = Calendar.current.startOfDay(for: Date())
         

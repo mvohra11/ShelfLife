@@ -27,6 +27,8 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
     weak var coreDatabaseController: DatabaseProtocol?
     weak var appDelegate: AppDelegate?
 
+    
+    /// Function called as soon as view loads, will initiate all fields to be initial values passed from segue.
     override func viewDidLoad() {
         super.viewDidLoad()
         appDelegate = UIApplication.shared.delegate as? AppDelegate
@@ -36,6 +38,7 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
         datePicker.minimumDate = Date()
         imageView.layer.cornerRadius = 10
         
+        // If added product or editting, fields are set to defined initial values.
         if let name = initialName {
             nameField.text = name
         }
@@ -62,19 +65,41 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
             imageView.image = image
         }
         
+        // If editting an existing product the button is updated.
         if edittingProduct != nil {
             saveButton.setTitle("Update Product", for: .normal)
         }
     }
     
+    
+    /// Returns the number of components (columns) in the picker view.
+    /// - Parameter pickerView: The picker view requesting this information
+    /// - Returns: The number of components (always 1 for this picker)
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1
     }
     
+    
+    /// Returns the number of rows in the picker view component.
+    /// - Parameters:
+    ///   - pickerView: The picker view requesting this information
+    ///   - component: The component (column) index
+    /// - Returns: The number of category options available dependent on the number of categories
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         return Category.allCases.count
     }
     
+    
+    /// Provides the display text for each category in the picker view.
+    ///
+    /// Maps each `Category` enum case to a formatted, human-readable string
+    /// suitable for display in the picker interface.
+    ///
+    /// - Parameters:
+    ///   - pickerView: The picker view requesting the title
+    ///   - row: The zero-based index of the row (corresponds to category index)
+    ///   - component: The component index (always 0 for single-column picker)
+    /// - Returns: A formatted category name, or `nil` if the row is invalid
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         let category = Category.allCases[row]
         switch category {
@@ -91,6 +116,16 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
         }
     }
     
+    
+    /// Called when the user selects a row in the category picker.
+    ///
+    /// Captures the selected category and logs it for debugging purposes.
+    /// This method is invoked automatically when the picker wheel stops on a new value.
+    ///
+    /// - Parameters:
+    ///   - pickerView: The picker view that registered the selection
+    ///   - row: The zero-based index of the newly selected row
+    ///   - component: The component index (always 0 for single-column picker)
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         let selectedCategory = Category.allCases[row]
         print("Selected: \(selectedCategory) rawValue: \(selectedCategory.rawValue)")
@@ -105,6 +140,15 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
         // Pass the selected object to the new view controller.
     }
     */
+    
+    /// Presents a simple alert dialog to the user.
+    ///
+    /// Creates and displays a standard iOS alert with a single "OK" button
+    /// to dismiss. Useful for showing errors, confirmations, or informational messages.
+    ///
+    /// - Parameters:
+    ///   - title: The heading text displayed at the top of the alert
+    ///   - message: The descriptive message text shown below the title
     func displayMessage(title: String, message: String){
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
@@ -113,6 +157,18 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
         self.present(alertController,animated: true,completion: nil)
     }
     
+    
+    /// Saves a makeup product to the database and schedules a restock notification when button is clicked.
+    /// If editing an existing product, the old notification is removed before creating a new one
+    ///
+    /// This method performs the following operations:
+    /// 1. Validates that name and brand fields are filled
+    /// 2. Saves the product image to the documents directory (if provided)
+    /// 3. Either updates an existing product or creates a new one
+    /// 4. Schedules/updates a notification for the restock date
+    /// 5. Returns to the previous screen
+    ///
+    /// - Parameter sender: The UI control that triggered the save action
     @IBAction func createProduct(_ sender: Any) {
         guard let name = nameField.text, let brand = brandField.text, let category = Category(rawValue: Int32(Picker.selectedRow(inComponent: 0))) else {
             return
@@ -120,6 +176,7 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
         
         let restockDate = datePicker.date
         
+        // Checks if any fields are empty and returns error message
         if name.isEmpty || brand.isEmpty{
             var errorMsg = "Please ensure all fields are filled: \n"
             if name.isEmpty{
@@ -134,6 +191,7 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
                 
         var filename: String? = nil
         
+        // If image is empty, default image is set.
         if let image = imageView.image,
            image != UIImage(systemName: "camera.fill") {
             
@@ -157,6 +215,7 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
             }
         }
         
+        // If product already exists, it updates and reschedules notification
         if let product = edittingProduct {
             let _ = coreDatabaseController?.updateProduct(product: product, name: name, brand: brand, category: category, restockDate: restockDate, imageFile: filename)
             let notifID = product.objectID.uriRepresentation().absoluteString
@@ -167,7 +226,7 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
                 id: notifID,
                 date: restockDate
             )
-        } else {
+        } else { //If product does not exist, add it with a scheduled notification.
             if let newProduct = coreDatabaseController?.addProduct(name: name, brand: brand, category: category, restockDate: restockDate, imageFile: filename){
                 createNotification(
                     title: "Time to Restock!",
@@ -180,9 +239,20 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
         
         navigationController?.popViewController(animated: true)
     }
+    
+    
+    /// Displays an action sheet for the user to select an image source when 'Take Photo' is pressed
+    ///
+    /// Presents options to either take a new photo with the camera (if available)
+    /// or choose an existing photo from the device's photo library. The camera
+    /// option is only shown on devices that have a camera.
+    ///
+    /// - Parameter sender: The UI control that triggered the photo selection
+    /// - Note: The selected image will be handled by the `UIImagePickerControllerDelegate` methods
     @IBAction func takePhoto(_ sender: Any) {
         let actionSheet = UIAlertController(title: "Choose Photo Source", message: nil, preferredStyle: .actionSheet)
         
+        // Adds option to use camera to action sheet
         if UIImagePickerController.isSourceTypeAvailable(.camera) {
             actionSheet.addAction(UIAlertAction(title: "Take Photo", style: .default) { _ in
                 let picker = UIImagePickerController()
@@ -193,6 +263,7 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
             })
         }
         
+        // Adds option to use photo from gallery
         actionSheet.addAction(UIAlertAction(title: "Choose from Library", style: .default) { _ in
             let picker = UIImagePickerController()
             picker.sourceType = .photoLibrary
@@ -207,6 +278,15 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
     }
     
     // MARK: - Image Delegate
+    
+    /// Delegate method called when the user selects an image from the picker.
+    ///
+    /// Extracts the selected image from the info dictionary and displays it
+    /// in the image view, then dismisses the picker.
+    ///
+    /// - Parameters:
+    ///   - picker: The UIImagePickerController instance
+    ///   - info: Dictionary containing the selected media and metadata
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let pickedImage = info[.originalImage] as? UIImage {
             imageView.image = pickedImage
@@ -214,14 +294,36 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
         dismiss(animated: true,completion: nil)
     }
     
+    
+    /// Delegate method called when the user cancels the image picker.
+    /// - Parameter picker: The image picker controller to dismiss
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         dismiss(animated: true, completion: nil)
     }
     
+    
+    /// Shows helpful information about selecting restock dates.
+    ///
+    /// Explains the difference between expiry dates and PAO (Period After Opening)
+    /// to help users choose the appropriate restock date for their products.
+    ///
+    /// - Parameter sender: The info button that triggered this alert
     @IBAction func showDateInfo(_ sender: Any) {
         displayMessage(title: "Picking the right date", message: "You can pick a Restock date based on either the expiry of the product, or the PAO (period after opening). Which can be found as a number shown on a container somewhere on the product. This is the number of months your product is good for after being opened.")
     }
     
+    
+    /// Creates and schedules a local notification for product restocking.
+    ///
+    /// Schedules a notification to remind the user when a product needs to be
+    /// restocked. The notification only fires if the user has granted permission.
+    ///
+    /// - Parameters:
+    ///   - title: The notification's title text
+    ///   - body: The notification's detailed message
+    ///   - id: Unique identifier (typically the product's object ID) for managing the notification
+    ///   - date: The scheduled delivery date for the notification
+    /// - Important: Requires notification permission to be granted
     func createNotification(title: String, body: String, id: String, date:Date) {
         guard appDelegate?.notificationsEnabled == true else {
             print("Notifications are disabled")
@@ -232,7 +334,8 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
         content.title = title
         content.body = body
         
-        //let debugDate = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
+        // Schedule notification one minute in future for debugging, replaced date with debugDate in components.
+        // let debugDate = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
         
         let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
         

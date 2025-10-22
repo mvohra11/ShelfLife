@@ -132,11 +132,83 @@
                             <outlet property="delegate" destination="leI-F9-d5s" id="uYF-FX-w8Z"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Products" id="lEF-3O-lmx"/>
+                    <navigationItem key="navigationItem" title="Products" id="lEF-3O-lmx">
+                        <barButtonItem key="rightBarButtonItem" title="Item" image="info.circle" catalog="system" id="o3x-Kq-JeK">
+                            <connections>
+                                <segue destination="Iba-Xd-M0Q" kind="presentation" id="moe-j5-Pxm"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="MSl-zl-sye" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="634" y="-251"/>
+        </scene>
+        <!--Software License-->
+        <scene sceneID="NNd-O1-uZf">
+            <objects>
+                <viewController title="Software License" id="Iba-Xd-M0Q" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="ghh-1b-iSz">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="783"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="n3S-xO-FXh">
+                                <rect key="frame" x="12" y="269" width="369" height="128"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Software License" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Pj-bh-q3T">
+                                        <rect key="frame" x="12" y="12" width="369" height="24"/>
+                                        <fontDescription key="fontDescription" type="system" weight="heavy" pointSize="20"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="TopLeft" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i7H-1d-Uxw">
+                                        <rect key="frame" x="0.0" y="48" width="369" height="406"/>
+                                        <mutableString key="text">Data Source:
+This application retrieves makeup product information from the 
+Makeup API (makeup-api.herokuapp.com), a free public API 
+providing cosmetic product data.
+
+The product data, including names, brands, prices, and images, 
+is provided by the Makeup API. All product information remains 
+the property of their respective owners.
+
+This app is intended for educational purposes.
+
+Disclaimer:
+Product information is provided as-is from third-party sources. 
+We do not guarantee accuracy or availability of data.</mutableString>
+                                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="i7H-1d-Uxw" firstAttribute="leading" secondItem="38B-OV-aao" secondAttribute="leading" id="6j5-v6-NWu"/>
+                                    <constraint firstItem="i7H-1d-Uxw" firstAttribute="top" secondItem="5Pj-bh-q3T" secondAttribute="bottom" constant="12" id="7tD-8t-bZR"/>
+                                    <constraint firstItem="5Pj-bh-q3T" firstAttribute="width" secondItem="n3S-xO-FXh" secondAttribute="width" id="Vo1-Oa-meL"/>
+                                    <constraint firstItem="5Pj-bh-q3T" firstAttribute="top" secondItem="n3S-xO-FXh" secondAttribute="top" constant="12" id="ZRI-MH-SAo"/>
+                                    <constraint firstItem="5Pj-bh-q3T" firstAttribute="leading" secondItem="n3S-xO-FXh" secondAttribute="leading" constant="12" id="nHf-7I-EdD"/>
+                                    <constraint firstItem="38B-OV-aao" firstAttribute="trailing" secondItem="5Pj-bh-q3T" secondAttribute="trailing" constant="-12" id="pPh-t6-HPg"/>
+                                    <constraint firstItem="i7H-1d-Uxw" firstAttribute="width" secondItem="n3S-xO-FXh" secondAttribute="width" id="tie-TC-VIN"/>
+                                    <constraint firstItem="38B-OV-aao" firstAttribute="trailing" secondItem="i7H-1d-Uxw" secondAttribute="trailing" id="vlK-Fb-7e3"/>
+                                </constraints>
+                                <viewLayoutGuide key="contentLayoutGuide" id="Zfk-93-g1h"/>
+                                <viewLayoutGuide key="frameLayoutGuide" id="38B-OV-aao"/>
+                            </scrollView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="A2z-5f-Aow"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="n3S-xO-FXh" firstAttribute="height" secondItem="ghh-1b-iSz" secondAttribute="height" id="4jF-eB-dL7"/>
+                            <constraint firstItem="n3S-xO-FXh" firstAttribute="leading" secondItem="A2z-5f-Aow" secondAttribute="leading" constant="12" id="i5C-3A-bXw"/>
+                            <constraint firstItem="A2z-5f-Aow" firstAttribute="trailing" secondItem="n3S-xO-FXh" secondAttribute="trailing" constant="12" id="l8a-iB-dkM"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="GaW-BN-Nre"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Twt-gD-ZGS" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1468" y="-251"/>
         </scene>
         <!--My Shelf-->
         <scene sceneID="DYQ-nm-gfJ">
@@ -431,12 +503,13 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="tMG-f1-L2f"/>
+        <segue reference="Vc6-J8-vVh"/>
     </inferredMetricsTieBreakers>
     <color key="tintColor" name="customBlack"/>
     <resources>
         <image name="bookmark.fill" catalog="system" width="110" height="128"/>
         <image name="defaultProduct" width="1024" height="1024"/>
+        <image name="info.circle" catalog="system" width="128" height="123"/>
         <namedColor name="customBlack">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </namedColor>

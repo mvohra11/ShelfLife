@@ -12,8 +12,8 @@ class CategoryProductsTableViewController: UITableViewController, UISearchBarDel
     private let CELL_PRODUCT = "productCell"
     var category: Category!
 
-    private var allProducts: [ProductData] = []
-    private var filteredProducts: [ProductData] = []
+    private var allProducts: [ProductData] = []     // All Products
+    private var filteredProducts: [ProductData] = []        // Searched Products
     
     var indicator = UIActivityIndicatorView()
     
@@ -21,6 +21,8 @@ class CategoryProductsTableViewController: UITableViewController, UISearchBarDel
     
     weak var coreDatabaseController: DatabaseProtocol?
     
+    
+    /// Sets up the view controller with search functionality and fetches category products.
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -59,17 +61,38 @@ class CategoryProductsTableViewController: UITableViewController, UISearchBarDel
     }
 
     // MARK: - Table view data source
-
+    
+    /// Returns the number of sections in the table view.
+    /// - Parameter tableView: The table view requesting this information
+    /// - Returns: Always returns 1
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
+    
+    /// Returns the number of filtered products to display.
+    /// - Parameters:
+    ///   - tableView: The table view requesting this information
+    ///   - section: The section index
+    /// - Returns: The count of filtered products
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
         return filteredProducts.count
     }
     
+    
+    /// Asynchronously fetches makeup products from the Makeup API.
+    ///
+    /// Constructs a URL request with the specified category and optional brand filter,
+    /// fetches data from the API, decodes the JSON response, and updates the table view
+    /// with the results. Shows a loading indicator during the fetch operation.
+    ///
+    /// - Parameters:
+    ///   - category: The makeup category to fetch products for
+    ///   - brand: Optional brand name to filter the results (default is nil)
+    /// - Note: Updates UI on the main actor after fetching completes
+    /// - Important: Displays activity indicator while loading
     func fetchProducts(for category: Category, brand: String? = nil) async {
         self.indicator.startAnimating()
         var searchURLComponents = URLComponents()
@@ -111,6 +134,15 @@ class CategoryProductsTableViewController: UITableViewController, UISearchBarDel
     }
 
     
+    /// Creates and configures a table view cell for a product.
+    ///
+    /// Displays the product with brand name (in uppercase) if available,
+    /// otherwise shows just the product name.
+    ///
+    /// - Parameters:
+    ///   - tableView: The table view requesting the cell
+    ///   - indexPath: The index path specifying the cell's location
+    /// - Returns: A configured cell with format "BRAND - Product Name" or just "Product Name"
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: CELL_PRODUCT, for: indexPath)
 
@@ -165,7 +197,16 @@ class CategoryProductsTableViewController: UITableViewController, UISearchBarDel
     
     // MARK: - Navigation
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    
+    /// Configures the destination view controller with selected product data.
+    ///
+    /// For the "selectSearchedProductSegue", passes the selected product's name,
+    /// brand (uppercased), and category to the AddProductViewController for
+    /// pre-filling the form.
+    ///
+    /// - Parameters:
+    ///   - segue: The segue describing the transition
+    ///   - sender: The table view cell that was tapped
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
@@ -182,6 +223,14 @@ class CategoryProductsTableViewController: UITableViewController, UISearchBarDel
     }
     
     // MARK: -Search Bar
+    
+    /// Filters products by search text matching name or brand.
+    ///
+    /// Performs case-insensitive search across product names and brands.
+    /// Shows all products when search text is empty.
+    ///
+    /// - Parameter searchController: The search controller with the active search query
+    /// - Note: Automatically reloads the table view after filtering
     func updateSearchResults(for searchController: UISearchController) {
         guard let searchText = searchController.searchBar.text?.lowercased() else { return }
 

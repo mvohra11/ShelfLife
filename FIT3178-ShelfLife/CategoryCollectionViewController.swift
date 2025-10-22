@@ -13,6 +13,8 @@ class CategoryCollectionViewController: UICollectionViewController {
     
     private let categories = Category.allCases
 
+    
+    /// Sets up the view controller after it has been loaded into memory.
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -26,8 +28,11 @@ class CategoryCollectionViewController: UICollectionViewController {
     }
 
     // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    
+    /// Prepares for navigation to the category products screen.
+    /// - Parameters:
+    ///   - segue: The segue object containing information about the transition
+    ///   - sender: The collection view cell that triggered the segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
     
         // Get the new view controller using [segue destinationViewController].
@@ -45,17 +50,32 @@ class CategoryCollectionViewController: UICollectionViewController {
 
     // MARK: UICollectionViewDataSource
 
+    
+    /// Returns the number of sections in the collection view.
+    /// - Parameter collectionView: The collection view requesting this information
+    /// - Returns: Always returns 1
     override func numberOfSections(in collectionView: UICollectionView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
-
+    
+    /// Returns the number of items in the specified section.
+    /// - Parameters:
+    ///   - collectionView: The collection view requesting this information
+    ///   - section: The section index
+    /// - Returns: The number of categories to display
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of items
         return categories.count
     }
 
+    
+    /// Configures and returns a cell for the specified index path.
+    /// - Parameters:
+    ///   - collectionView: The collection view requesting the cell
+    ///   - indexPath: The index path of the cell
+    /// - Returns: A configured collection view cell displaying a category
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath)
     
