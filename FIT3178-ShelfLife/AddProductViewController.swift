@@ -335,9 +335,9 @@ class AddProductViewController: UIViewController, UIPickerViewDelegate, UIPicker
         content.body = body
         
         // Schedule notification one minute in future for debugging, replaced date with debugDate in components.
-        // let debugDate = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
+        let debugDate = Calendar.current.date(byAdding: .minute, value: 1, to: Date())!
         
-        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: debugDate)
         
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
                 
